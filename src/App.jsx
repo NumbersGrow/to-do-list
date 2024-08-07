@@ -10,6 +10,32 @@ function App() {
   const [allTodos, setAllTodos] = useState([]);
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [completedTasks, setCompletedTasks] = useState([]);
+  const [editTask, setEditTask] = useState("");
+  const [editUpdatedTask, setEditUpdatedTask] = useState("");
+
+  const handleCompletedTask = (index) => {
+    let now = new Date();
+    let dd = now.getDate();
+    let mm = now.getMonth() + 1;
+    let yyyy = now.getFullYear();
+    let hh = now.getHours();
+    let m = now.getMinutes();
+    let s = now.getSeconds();
+    let completedOn =
+      dd + "-" + mm + "-" + yyyy + " at " + hh + ":" + m + ":" + s;
+
+    let filteredItem = {
+      ...allTodos[index],
+      completedOn: completedOn,
+    };
+
+    let updatedCompletedArr = [...completedTasks];
+    updatedCompletedArr.push(filteredItem);
+    setCompletedTasks(updatedCompletedArr);
+    handleDeleteTask(index);
+    localStorage.setItem("completedTodos", JSON.stringify(updatedCompletedArr));
+  };
 
   const handleAddTask = () => {
     let newTodoItem = {
@@ -20,23 +46,69 @@ function App() {
     let updatedTodoArr = [...allTodos];
     updatedTodoArr.push(newTodoItem);
     setAllTodos(updatedTodoArr);
+    setNewTitle("");
+    setNewDescription("");
     localStorage.setItem("todolist", JSON.stringify(updatedTodoArr));
   };
 
   const handleDeleteTask = (index) => {
     let reducedTodoList = [...allTodos];
-    reducedTodoList.splice(index);
+    reducedTodoList.splice(index, 1);
 
     localStorage.setItem("todolist", JSON.stringify(reducedTodoList));
     setAllTodos(reducedTodoList);
-  }
+  };
+
+  const handleDeleteCompletedTask = (index) => {
+    let reducedCompletedList = [...completedTasks];
+    reducedCompletedList.splice(index, 1);
+    localStorage.setItem(
+      "completedTodos",
+      JSON.stringify(reducedCompletedList)
+    );
+    setCompletedTasks(reducedCompletedList);
+  };
+
+  const handleEdit = (ind, item) => {
+    console.log(ind);
+    setEditTask(ind);
+    setEditUpdatedTask(item);
+  };
+
+  const handleEditTitle = (value) => {
+    setEditUpdatedTask((prev) => {
+      return { ...prev, title: value };
+    });
+  };
+
+  const handleEditDescription = (value) => {
+    setEditUpdatedTask((prev) => {
+      return { ...prev, description: value };
+    });
+  };
+
+const handleUpdate = () => {
+let newTodo = [...allTodos];
+newTodo[editTask] = editUpdatedTask;
+setAllTodos(newTodo);
+setEditTask("");
+
+
+}
 
   useEffect(() => {
     let storageTodo = JSON.parse(localStorage.getItem("todolist"));
+    let storageCompletedTodo = JSON.parse(
+      localStorage.getItem("completedTodos")
+    );
+
     if (storageTodo) {
       setAllTodos(storageTodo);
-        }
-  },[]);
+    }
+    if (storageCompletedTodo) {
+      setCompletedTasks(storageCompletedTodo);
+    }
+  }, []);
 
   return (
     <div className="App">
@@ -66,7 +138,12 @@ function App() {
             ></input>
           </div>
           <div className="to-do-input__item">
-            <Button className="btn" onClick={handleAddTask} text="Add" />
+            <Button
+              className="btn"
+              onClick={handleAddTask}
+              type="reset"
+              text="Add"
+            />
           </div>
         </div>
         <div className="btn-wrapper">
@@ -83,31 +160,90 @@ function App() {
         </div>
 
         <div className="list-wrapper">
-          {allTodos.map((item, index) => {
-            return (
-              <div className="list-wrapper__item" key={index}>
-                <div className="list-wrapper__item-text">
-                  <h3 className="list-wrapper__item-text__title">
-                    {item.title}
+          {isCompletedScreen === false &&
+            allTodos.map((item, index) => {
+              if (editTask === index) {
+                return (
+                  <div className="edit-wrapper" key={index}>
+                    <input
+                      className="edit-wrapper__title"
+                      placeholder="Edit Title"
+                      onChange={(e) => handleEditTitle(e.target.value)}
+                      value={editUpdatedTask.title}
+                    />
+                    <textarea
+                      className="edit-wrapper__description"
+                      rows={4}
+                      placeholder="Edit Description"
+                      onChange={(e) => handleEditDescription(e.target.value)}
+                      value={editUpdatedTask.description}
+                    />
+                    <Button
+                      className="btn"
+                      onClick={handleUpdate}
+                      type="button"
+                      text="Update"
+                    />
+                  </div>
+                );
+              } else {
+                return (
+                  <div className="list-wrapper__item" key={index}>
+                    <div className="list-wrapper__item-text">
+                      <h3 className="list-wrapper__item-text__title">
+                        {item.title}
+                      </h3>
+                      <p className="list-wrapper__item-text__description">
+                        {item.description}
+                      </p>
+                    </div>
+                    <div className="list-wrapper__item-icon">
+                      <AiOutlineDelete
+                        className="list-wrapper__item-icon__delete"
+                        onClick={() => handleDeleteTask(index)}
+                        title="Delete"
+                      />
+                      <BsCheckLg
+                        className="list-wrapper__item-icon__check"
+                        onClick={() => handleCompletedTask(index)}
+                        title="Complete"
+                      />
+                      <AiOutlineEdit
+                        className="list-wrapper__item-icon__check"
+                        onClick={() => handleEdit(index, item)}
+                        title="Complete"
+                      />
+                    </div>
+                  </div>
+                );
+              }
+            })}
+
+          {isCompletedScreen === true &&
+            completedTasks.map((item, index) => {
+              return (
+                <div className="list-wrapper__item" key={index}>
+                  <div className="list-wrapper__item-text">
+                    <h3 className="list-wrapper__item-text__title">
+                      {item.title}
                     </h3>
-                  <p className="list-wrapper__item-text__description">
-                    {item.description}
-                  </p>
+                    <p className="list-wrapper__item-text__description">
+                      {item.description}
+                    </p>
+                    <p className="list-wrapper__item-text__time">
+                      Completed on : {item.completedOn}
+                    </p>
+                  </div>
+                  <div className="list-wrapper__item-icon">
+                    <AiOutlineDelete
+                      className="list-wrapper__item-icon__delete"
+                      onClick={() => handleDeleteCompletedTask(index)}
+                      title="Delete"
+                    />
+                  </div>
                 </div>
-                <div className="list-wrapper__item-icon">
-                  <AiOutlineDelete
-                    className="list-wrapper__item-icon__delete"
-                    onClick={()=> handleDeleteTask(index)}
-                    title="Delete"
-                  />
-                  <BsCheckLg
-                    className="list-wrapper__item-icon__check"
-                    title="Complete"
-                  />
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
     </div>
