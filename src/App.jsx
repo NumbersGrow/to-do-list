@@ -179,7 +179,7 @@ setEditTask("");
                       value={editUpdatedTask.description}
                     />
                     <Button
-                      className="btn"
+                      className="btn btn-edit"
                       onClick={handleUpdate}
                       type="button"
                       text="Update"

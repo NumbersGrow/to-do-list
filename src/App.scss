@@ -161,11 +161,23 @@ body {
 .edit-wrapper {
   display: flex;
   flex-direction: column;
+  padding: .7rem;
 
   &__title, &__description {
     background-color: #d0bdf4;
+    border: .08rem solid lightcyan;
+    border-radius: .2rem;
     padding: 0.5rem;
-    margin-bottom: 0.2rem;
+    margin: 0.2rem;
     box-shadow: 0px 3px 5px rgb(43, 42, 42);
   }
+}
+
+.btn-edit {
+  margin-left: auto;
+  margin-right: auto;
+  padding: .7rem;
+  margin-top: 1rem;
+  font-size: 1rem;
+  width:fit-content;
 }
